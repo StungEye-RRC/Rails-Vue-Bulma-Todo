@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import SerializedStorage from 'serialized_storage.js';
+import RailsAPI from 'rails_api.js';
 
 export default {
   data: function () {
@@ -30,73 +30,38 @@ export default {
     }
   },
 
+  /*
+    Had to enable @babel/polyfill to get async/await working:
+    https://github.com/rails/webpacker/issues/518#issuecomment-437778297
+  */
   methods: {
-    add_item: function() {
-      // The new item can be found in this.new_item
+    add_item: async function() {
       // Early return if the new item is empty.
-      if (this.new_item === '') return
+      if (this.new_item === '') return;
 
-      fetch('http://localhost:3000/to_dos.json', {
-        method: 'POST',
-        body: JSON.stringify({ description: this.new_item, done: false }),
-        headers: {
-          'Content-type': 'application/json; charset=utf-8',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-      }).then(response => response.json())
-        .then((todo) => {
-          // Push this new item to the this.todos array.
-          this.todos.push(todo)
-
-          // Clear out the new item input by clearing this.new_item
-          this.new_item = ''
-        });
-
+      const todo = await RailsAPI.createToDo(this.new_item);
+      this.todos.push(todo);
+      this.new_item = '';
     },
-    /*
-      Had to enable @babel/polyfill to get async/await working:
-      https://github.com/rails/webpacker/issues/518#issuecomment-437778297
-    */
     clear_completed: async function() {
       let todones = this.todos.filter(todo => todo.done);
 
       for(const todone of todones) {
-        const response = await fetch(`http://localhost:3000/to_dos/${todone.id}.json`, {
-          method: 'DELETE',
-          headers: {
-            'Content-type': 'application/json; charset=utf-8',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-          }
-        })
+        const response = await RailsAPI.deleteToDo(todone.id);
+
         if (response.status === 204) {
           this.todos = this.todos.filter(todo => todo.id !== todone.id);
         }
       }
-
     },
-    update_item: function(id) {
+    update_item: async function(id) {
       const todo = this.todos[id];
-
-      fetch(`http://localhost:3000/to_dos/${todo.id}.json`, {
-        method: 'PATCH',
-        body: JSON.stringify({ done: todo.done }),
-        headers: {
-          'Content-type': 'application/json; charset=utf-8',
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-      }).then(response => response.json())
-        .then((todo) => {
-          // Nothing?
-        });
+      const response = RailsAPI.updateToDo(todo);
     }
   },
 
-  mounted: function() {
-    fetch('http://localhost:3000/to_dos.json')
-      .then(result => result.json())
-      .then(todos => {
-        this.todos = todos;
-      });
+  mounted: async function() {
+    this.todos = await RailsAPI.getToDos();
   }
 }
 </script>
