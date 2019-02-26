@@ -3,7 +3,7 @@
     <ol>
       <li v-for="(todo, index) in todos" :key="index">
         <label>
-          <input type="checkbox" @change="update_item(index)" v-model="todo.done">
+          <input type="checkbox" @change="updateToDo(index)" v-model="todo.done">
           <del v-if="todo.done">
             {{ todo.description }}
           </del>
@@ -13,9 +13,9 @@
         </label>
       </li>
     </ol>
-    <input v-model.trim="new_item" @keyup.enter="add_item" placeholder="New Item">
-    <button @click="add_item">Add</button>
-    <button @click="clear_completed">Clear Completed</button>
+    <input v-model.trim="newToDo" @keyup.enter="createToDo" :disabled="inputDisabled" placeholder="New To Do Item">
+    <button @click="createToDo">Add</button>
+    <button @click="deleteCompleted">Clear Completed</button>
   </div>
 </template>
 
@@ -25,7 +25,8 @@ import RailsAPI from 'rails_api.js';
 export default {
   data: function () {
     return {
-      new_item: '',
+      newToDo: '',
+      inputDisabled: false,
       todos: []
     }
   },
@@ -35,15 +36,20 @@ export default {
     https://github.com/rails/webpacker/issues/518#issuecomment-437778297
   */
   methods: {
-    add_item: async function() {
-      // Early return if the new item is empty.
-      if (this.new_item === '') return;
+    createToDo: async function() {
+      if (this.newToDo === '') return;
 
-      const todo = await RailsAPI.createToDo(this.new_item);
+      this.inputDisabled = true;
+      const todo = await RailsAPI.createToDo(this.newToDo);
       this.todos.push(todo);
-      this.new_item = '';
+      this.newToDo = '';
+      this.inputDisabled = false;
     },
-    clear_completed: async function() {
+    updateToDo: async function(id) {
+      const todo = this.todos[id];
+      const response = RailsAPI.updateToDo(todo);
+    },
+    deleteCompleted: async function() {
       let todones = this.todos.filter(todo => todo.done);
 
       for(const todone of todones) {
@@ -53,10 +59,6 @@ export default {
           this.todos = this.todos.filter(todo => todo.id !== todone.id);
         }
       }
-    },
-    update_item: async function(id) {
-      const todo = this.todos[id];
-      const response = RailsAPI.updateToDo(todo);
     }
   },
 
