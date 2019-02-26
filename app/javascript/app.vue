@@ -26,7 +26,7 @@ export default {
   data: function () {
     return {
       new_item: '',
-      todos: SerializedStorage.fetch()
+      todos: []
     }
   },
 
@@ -49,6 +49,10 @@ export default {
       console.log("You just updated item #" + id);
       console.log(this.todos[id].text);
     }
+  },
+
+  mounted: function() {
+    this.todos = SerializedStorage.fetch();
   },
 
   watch: {
