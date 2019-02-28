@@ -55,6 +55,7 @@ class ToDosController < ApplicationController
   # DELETE /to_dos/1.json
   def destroy
     @to_do.destroy
+
     respond_to do |format|
       format.html { redirect_to to_dos_url, notice: 'To do was successfully destroyed.' }
       format.json { head :no_content }

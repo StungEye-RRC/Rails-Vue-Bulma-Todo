@@ -8,11 +8,14 @@
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
     <%= javascript_pack_tag 'application' %>
-    <%= javascript_pack_tag 'hello_vue' %>
-    <%= stylesheet_pack_tag 'hello_vue' %>
+    <%= javascript_pack_tag 'todo_vue' %>
+    <%= stylesheet_pack_tag 'todo_vue' %>
   </head>
-
   <body>
-    <%= yield %>
+    <section class="section">
+      <div class="container is-fluid">
+        <%= yield %>
+      </div>
+    </section>
   </body>
 </html>
