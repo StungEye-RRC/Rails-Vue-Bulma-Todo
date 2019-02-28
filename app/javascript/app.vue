@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <p class="error-message" v-if="httpError">
+      {{ httpErrorMsg }}
+    </p>
     <ol>
       <li v-for="(todo, index) in todos" :key="index">
         <label>
@@ -26,8 +29,10 @@ export default {
   data: function () {
     return {
       newToDo: '',
+      todos: [],
       inputDisabled: false,
-      todos: []
+      httpError: false,
+      httpErrorMsg: ''
     }
   },
 
@@ -36,34 +41,59 @@ export default {
     https://github.com/rails/webpacker/issues/518#issuecomment-437778297
   */
   methods: {
+    displayErrorMessage: function(msg) {
+      this.httpError = true;
+      this.httpErrorMsg = msg;
+    },
+
     createToDo: async function() {
       if (this.newToDo === '') return;
 
       this.inputDisabled = true;
-      const todo = await RailsAPI.createToDo(this.newToDo);
-      this.todos.push(todo);
-      this.newToDo = '';
-      this.inputDisabled = false;
+
+      try {
+        const todo = await RailsAPI.createToDo(this.newToDo);
+        this.todos.push(todo);
+        this.newToDo = '';
+      } catch(error) {
+        this.displayErrorMessage("Could not create to do item. Please check your network connection.");
+      } finally {
+        this.inputDisabled = false;
+      }
+
     },
+
     updateToDo: async function(id) {
       const todo = this.todos[id];
-      const response = RailsAPI.updateToDo(todo);
+
+      try {
+        const response = await RailsAPI.updateToDo(todo);
+      } catch(error) {
+        this.displayErrorMessage("Could not update item status. Please check your network connection.");
+        todo.done = !todo.done;
+      }
     },
+
     deleteCompleted: async function() {
       let todones = this.todos.filter(todo => todo.done);
 
-      for(const todone of todones) {
-        const response = await RailsAPI.deleteToDo(todone.id);
-
-        if (response.status === 204) {
+      try {
+        for(const todone of todones) {
+          const response = await RailsAPI.deleteToDo(todone.id);
           this.todos = this.todos.filter(todo => todo.id !== todone.id);
         }
+      } catch (error) {
+        this.displayErrorMessage("Could not delete item. Please check your network connection.");
       }
     }
   },
 
   mounted: async function() {
-    this.todos = await RailsAPI.getToDos();
+    try {
+      this.todos = await RailsAPI.getToDos();
+    } catch (error) {
+        this.displayErrorMessage("Could not load items. Please check your network connection.");
+    }
   }
 }
 </script>
