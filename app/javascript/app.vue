@@ -20,9 +20,7 @@
         </label>
       </li>
     </ul>
-    <br>
     <b-input v-model.trim="newToDo" @keyup.native.enter="createToDo" ref="newItem" :disabled="createIsOnGoing" placeholder="New To Do Item" autofocus></b-input>
-    <br>
     <button class="button is-info" v-bind:class="{ 'is-loading': createIsOnGoing }" @click="createToDo">Add</button>
     <button class="button is-warning" v-bind:class="{ 'is-loading': deleteIsOnGoing }" @click="deleteCompleted">Clear Completed</button>
   </div>
@@ -106,32 +104,19 @@ export default {
 </script>
 
 <style scoped>
-body {
-  background: #20262e;
-  padding: 20px;
-  font-family: Helvetica, sans-serif;
-}
-
-#app {
-  background: #fff;
-  border-radius: 4px;
-  padding: 20px;
-}
-
-ol {
+ul {
   margin-bottom: 2em;
 }
 
 li {
-  margin: 8px 0;
-}
-
-h2 {
-  font-weight: bold;
-  margin-bottom: 15px;
+  margin: 1em 0;
 }
 
 del {
   color: rgba(0, 0, 0, 0.3);
+}
+
+/deep/ input.input {
+  margin-bottom: 2em;
 }
 </style>
