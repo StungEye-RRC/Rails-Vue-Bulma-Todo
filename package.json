@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@babel/polyfill": "^7.2.5",
+    "eslint-plugin-vue": "^5.2.2",
     "webpack-dev-server": "2.11.2"
   }
 }
