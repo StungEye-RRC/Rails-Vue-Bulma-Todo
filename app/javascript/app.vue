@@ -1,13 +1,18 @@
 <template>
   <div id="app">
-    <ErrorModal :errorDetails="errorDetails"></ErrorModal>
+    <ErrorModal
+      :active="errorDetails.displayError"
+      :message="errorDetails.message"
+      :debugging-details="errorDetails.debugging"
+    />
 
     <ul v-if="todos.length" class="is-size-5">
       <li v-for="(todo, index) in todos" :key="index">
         <label>
-          <b-checkbox
+          <bCheckbox
+            v-model="todo.done"
             @change.native="updateToDo(index)"
-            v-model="todo.done"></b-checkbox>
+          />
           <del v-if="todo.done">
             {{ todo.description }}
           </del>
@@ -21,21 +26,24 @@
       There are no outstanding to do list items. Please add one.
     </p>
 
-    <b-input
-      v-model.trim="newToDo"
-      @keyup.native.enter="createToDo"
+    <bInput
       ref="newItem"
+      v-model.trim="newToDo"
       :disabled="createIsOnGoing"
+      @keyup.native.enter="createToDo"
       placeholder="New To Do Item"
-      autofocus></b-input>
+      autofocus
+    />
     <button
-      class="button is-info"
       v-bind:class="{ 'is-loading': createIsOnGoing }"
-      @click="createToDo">Add</button>
+      @click="createToDo"
+      class="button is-info"
+    >Add</button>
     <button
-      class="button is-warning"
       v-bind:class="{ 'is-loading': deleteIsOnGoing }"
-      @click="deleteCompleted">Clear Completed</button>
+      @click="deleteCompleted"
+      class="button is-warning"
+    >Clear Completed</button>
   </div>
 </template>
 
@@ -51,13 +59,13 @@ export default {
       todos: [],
       createIsOnGoing: false,
       deleteIsOnGoing: false,
-      errorDetails: { active: false, message: '', debugging: ''}
+      errorDetails: { displayError: false, message: '', debugging: ''}
     }
   },
 
   methods: {
     displayErrorMessage: function(error, msg) {
-      this.errorDetails.active = true;
+      this.errorDetails.displayError = true;
       this.errorDetails.message = msg
       this.errorDetails.debugging =  `${error.name} ${error.response.status}`;
     },
