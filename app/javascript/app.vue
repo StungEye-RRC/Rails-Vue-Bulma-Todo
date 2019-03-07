@@ -9,10 +9,7 @@
     <ul v-if="todos.length" class="is-size-5">
       <li v-for="(todo, index) in todos" :key="index">
         <label>
-          <bCheckbox
-            v-model="todo.done"
-            @change.native="updateToDo(index)"
-          />
+          <bCheckbox v-model="todo.done" @change.native="updateToDo(index)" />
           <del v-if="todo.done">
             {{ todo.description }}
           </del>
