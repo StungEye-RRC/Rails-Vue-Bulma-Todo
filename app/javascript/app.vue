@@ -1,16 +1,13 @@
 <template>
   <div id="app">
-    <b-modal :active.sync="httpErrorDetails.active">
-      <b-message title="Network Error" type="is-danger" :closable="false">
-        <p>{{ httpErrorDetails.message }}</p>
-        <br>
-        <p class="has-text-grey-light">{{ httpErrorDetails.debugging }}</p>
-      </b-message>
-    </b-modal>
-    <ul class="is-size-5">
+    <ErrorModal :errorDetails="errorDetails"></ErrorModal>
+
+    <ul v-if="todos.length" class="is-size-5">
       <li v-for="(todo, index) in todos" :key="index">
         <label>
-          <b-checkbox @change.native="updateToDo(index)" v-model="todo.done"></b-checkbox>
+          <b-checkbox
+            @change.native="updateToDo(index)"
+            v-model="todo.done"></b-checkbox>
           <del v-if="todo.done">
             {{ todo.description }}
           </del>
@@ -20,31 +17,49 @@
         </label>
       </li>
     </ul>
-    <b-input v-model.trim="newToDo" @keyup.native.enter="createToDo" ref="newItem" :disabled="createIsOnGoing" placeholder="New To Do Item" autofocus></b-input>
-    <button class="button is-info" v-bind:class="{ 'is-loading': createIsOnGoing }" @click="createToDo">Add</button>
-    <button class="button is-warning" v-bind:class="{ 'is-loading': deleteIsOnGoing }" @click="deleteCompleted">Clear Completed</button>
+    <p v-else>
+      There are no outstanding to do list items. Please add one.
+    </p>
+
+    <b-input
+      v-model.trim="newToDo"
+      @keyup.native.enter="createToDo"
+      ref="newItem"
+      :disabled="createIsOnGoing"
+      placeholder="New To Do Item"
+      autofocus></b-input>
+    <button
+      class="button is-info"
+      v-bind:class="{ 'is-loading': createIsOnGoing }"
+      @click="createToDo">Add</button>
+    <button
+      class="button is-warning"
+      v-bind:class="{ 'is-loading': deleteIsOnGoing }"
+      @click="deleteCompleted">Clear Completed</button>
   </div>
 </template>
 
 <script>
-import RailsAPI from 'rails_api.js';
+import RailsAPI from 'RailsApi.js';
+import ErrorModal from 'ErrorModal.vue';
 
 export default {
+  components: { ErrorModal },
   data: function () {
     return {
       newToDo: '',
       todos: [],
       createIsOnGoing: false,
       deleteIsOnGoing: false,
-      httpErrorDetails: { active: false, message: '', debugging: ''}
+      errorDetails: { active: false, message: '', debugging: ''}
     }
   },
 
   methods: {
     displayErrorMessage: function(error, msg) {
-      this.httpErrorDetails.active = true;
-      this.httpErrorDetails.message = msg
-      this.httpErrorDetails.debugging =  `${error.name} ${error.response.status}`;
+      this.errorDetails.active = true;
+      this.errorDetails.message = msg
+      this.errorDetails.debugging =  `${error.name} ${error.response.status}`;
     },
 
     createToDo: async function() {
@@ -60,7 +75,7 @@ export default {
         this.displayErrorMessage(error, "Could not create to do item. Please check your network connection.");
       } finally {
         this.createIsOnGoing = false;
-        this.$nextTick(() => this.$refs.newItem.focus());
+        this.$nextTick(() => this.$refs.newItem.focus()); // Requires a ref attribute on the b-input component.
       }
 
     },
@@ -104,7 +119,7 @@ export default {
 </script>
 
 <style scoped>
-ul {
+ul, p {
   margin-bottom: 2em;
 }
 
