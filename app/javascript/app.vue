@@ -6,6 +6,8 @@
       :debugging-details="errorDetails.debugging"
     />
 
+     <bLoading :active.sync="initialLoadIsOnGoing" :can-cancel="true" />
+
     <ul v-if="todos.length" class="is-size-5">
       <li v-for="(todo, index) in todos" :key="index">
         <label>
@@ -19,7 +21,7 @@
         </label>
       </li>
     </ul>
-    <p v-else>
+    <p v-else-if="!initialLoadIsOnGoing">
       There are no outstanding to do list items. Please add one.
     </p>
 
@@ -54,6 +56,7 @@ export default {
     return {
       newToDo: '',
       todos: [],
+      initialLoadIsOnGoing: true,
       createIsOnGoing: false,
       deleteIsOnGoing: false,
       errorDetails: { displayError: false, message: '', debugging: ''}
@@ -113,17 +116,22 @@ export default {
     }
   },
 
-  mounted: async function() {
+  created: async function() {
     try {
       this.todos = await RailsAPI.getToDos();
     } catch (error) {
         this.displayErrorMessage(error, "Could not load items. Please check your network connection.");
     }
+    this.initialLoadIsOnGoing = false;
   }
 }
 </script>
 
 <style scoped>
+[v-cloak] {
+  display: none;
+}
+
 ul, p {
   margin-bottom: 2em;
 }
