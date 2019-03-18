@@ -20,9 +20,16 @@ const rails_api = {
       .getAttribute("content")
   },
 
+  checkResponse: function(response, expectedStatus) {
+    if (response.status !== expectedStatus) {
+      throw new HttpError(response);
+    }
+  },
+
   getToDos: async function() {
     const response = await fetch("http://localhost:3000/to_dos.json");
 
+    rails_api.checkResponse(response, 200);
     return response.json();
   },
 
@@ -33,6 +40,7 @@ const rails_api = {
       headers: rails_api.headers
     });
 
+    rails_api.checkResponse(response, 201);
     return response.json();
   },
 
@@ -46,6 +54,7 @@ const rails_api = {
       }
     );
 
+    rails_api.checkResponse(response, 200);
     return response;
   },
 
@@ -55,6 +64,7 @@ const rails_api = {
       headers: rails_api.headers
     });
 
+    rails_api.checkResponse(response, 204);
     return response;
   }
 };
