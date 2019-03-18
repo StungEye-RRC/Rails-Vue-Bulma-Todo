@@ -1,11 +1,5 @@
 <template>
   <div id="app">
-    <ErrorModal
-      :active="errorDetails.displayError"
-      :message="errorDetails.message"
-      :debugging-details="errorDetails.debugging"
-    />
-
     <bLoading
       :active.sync="initialLoadIsOnGoing"
       :can-cancel="true"
@@ -54,10 +48,8 @@
 
 <script>
 import RailsAPI from "RailsApi.js";
-import ErrorModal from "ErrorModal.vue";
 
 export default {
-  components: { ErrorModal },
   data: function() {
     return {
       newToDo: "",
@@ -81,64 +73,32 @@ export default {
 
       this.createIsOnGoing = true;
 
-      try {
-        const todo = await RailsAPI.createToDo(this.newToDo);
-        this.todos.push(todo);
-        this.newToDo = "";
-      } catch (error) {
-        this.displayErrorMessage(
-          error,
-          "Could not create to do item. Please check your network connection."
-        );
-      } finally {
-        this.createIsOnGoing = false;
-        this.$nextTick(() => this.$refs.newItem.focus()); // Requires a ref attribute on the b-input component.
-      }
+      const todo = await RailsAPI.createToDo(this.newToDo);
+      this.todos.push(todo);
+      this.newToDo = "";
+      this.createIsOnGoing = false;
+      this.$nextTick(() => this.$refs.newItem.focus()); // Requires a ref attribute on the b-input component.
     },
 
     updateToDo: async function(id) {
       const todo = this.todos[id];
-
-      try {
-        const response = await RailsAPI.updateToDo(todo);
-      } catch (error) {
-        this.displayErrorMessage(
-          error,
-          "Could not update item status. Please check your network connection."
-        );
-        todo.done = !todo.done;
-      }
+      const response = await RailsAPI.updateToDo(todo);
     },
 
     deleteCompleted: async function() {
       this.deleteIsOnGoing = true;
       let todones = this.todos.filter(todo => todo.done);
 
-      try {
-        for (const todone of todones) {
-          const response = await RailsAPI.deleteToDo(todone.id);
-          this.todos = this.todos.filter(todo => todo.id !== todone.id);
-        }
-      } catch (error) {
-        this.displayErrorMessage(
-          error,
-          "Could not delete item. Please check your network connection."
-        );
-      } finally {
-        this.deleteIsOnGoing = false;
+      for (const todone of todones) {
+        const response = await RailsAPI.deleteToDo(todone.id);
+        this.todos = this.todos.filter(todo => todo.id !== todone.id);
       }
+      this.deleteIsOnGoing = false;
     }
   },
 
   created: async function() {
-    try {
-      this.todos = await RailsAPI.getToDos();
-    } catch (error) {
-      this.displayErrorMessage(
-        error,
-        "Could not load items. Please check your network connection."
-      );
-    }
+    this.todos = await RailsAPI.getToDos();
     this.initialLoadIsOnGoing = false;
   }
 };
